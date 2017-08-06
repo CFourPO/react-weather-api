@@ -70,48 +70,51 @@ const baseUrl = 'https://maps.googleapis.com/maps/api/geocode/json'; // ?address
 module.exports.getForecast = (lat, lng) => {
     console.log("gettingForecast");
     return new Promise((resolve, reject) => {
-        request({url: `https://api.darksky.net/forecast/7a4c0d47fc0792a02d420cf8cb992410/${lat},${lng}`}, 
-            (err, response, body) => {
+        request({
+            url: `https://api.darksky.net/forecast/7a4c0d47fc0792a02d420cf8cb992410/${lat},${lng}`
+        }, (err, response, body) => {
             if (err) {
                 console.log("Im actuaclly errored out here");
                 reject(err);
             } else {
-                console.log(JSON.parse(body));
-                resolve(body);
-                // let results = JSON.parse(body);
+                // console.log(JSON.parse(body));
+                // resolve(body);
+                let results = JSON.parse(body);
                 // let currently = results.currently;
                 // let minutely = results.minutely;
                 // let hourly = results.hourly;
-                // let daily = results.daily;
+                let daily = results.daily || [];
 
-                // let dailyResults = [];
-                // daily.data.forEach(day => {
-                //     let obj = {};
-                //     // obj.dayOfWeek = new Date(day.time * 1000).getDay();
-                //     obj.dayOfWeek = new Date(day.time * 1000).getDay();
-                //     obj.details = day;
-                //     obj.minTemp = {
-                //         temp: day.apparentTemperatureMin,
-                //         time: new Date(day.apparentTemperatureMinTime * 1000)
-                //     };
-                //     obj.maxTemp = {
-                //         temp: day.apparentTemperatureMax,
-                //         time: new Date(day.apparentTemperatureMaxTime * 1000)
-                //     };
-                //     obj.time = new Date(day.time * 1000);
-                //     obj.summary = day.summary;
-                //     obj.rain = day.precipProbability >= .5
-                //     dailyResults.push(obj);
-                // });
+                let dailyResults = [];
+                daily.data.forEach(day => {
+                    let obj = {};
+                    // obj.dayOfWeek = new Date(day.time * 1000).getDay();
+                    obj.dayOfWeek = new Date(day.time * 1000).getDay();
+                    // console.log("obj.dayOfWeek", obj.dayOfWeek);
+                    // obj.details = day;
+                    obj.minTemp = {
+                        temp: day.apparentTemperatureMin,
+                        time: new Date(day.apparentTemperatureMinTime * 1000)
+                    };
+                    obj.maxTemp = {
+                        temp: day.apparentTemperatureMax,
+                        time: new Date(day.apparentTemperatureMaxTime * 1000)
+                    };
+                    obj.time = day.time;
+                    obj.summary = day.summary;
+                    obj.rain = day.precipProbability >= .5
+                    dailyResults.push(obj);
+                });
 
-                // let responseObj = {
-                //     summary: daily.summary,
-                //     dayDetails: dailyResults,
-                //     lat: data.lat,
-                //     lng: data.lng
-                // };
+                let responseObj = {
+                    summary: daily.summary,
+                    dayDetails: dailyResults,
+                    lat: lat,
+                    lng: lng
+                };
 
-                // resolve(responseObj);
+                console.log("Sending to client", responseObj);
+                resolve(responseObj);
             }
         });
     });

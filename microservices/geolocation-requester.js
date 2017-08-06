@@ -1,10 +1,20 @@
 const cote = require('cote');
 const requester = new cote.Requester({ name: 'geolocation requester' });
 
-const request = { type: 'latlng', address: 'New York City' };
-
-module.exports.requester = requester;
-
+module.exports.sendGeolocationRequest = (address) => {
+    return new Promise((resolve, reject) => {
+        const request = { type: 'latlng', address: address };
+        requester.send(request, (err, res) => {
+            console.log("Im in the request");
+            console.log(res);
+            if (err) {
+                reject(err);
+            } else {
+                resolve(res);
+            }
+        });
+    });
+}
 // module.exports.sendGeolocationRequest = (req, res, next) => {
 //     requester.send({type: 'latlng', address: req.body.address }, (err, res) => {
 //         if (err) {

@@ -3,39 +3,39 @@ const getLatLng = require('./getLatLng');
 const darksky = require('./darksky');
 const router = express.Router();
 
-const cote = require('cote');
-const requester = new cote.Requester({ name: 'geolocation requester' });
+const geolocation = require('../microservices/geolocation-requester');
+
+// const cote = require('cote');
+// const requester = new cote.Requester({ name: 'geolocation requester' });
 
 
-
-
-
-let sendGeolocationRequest = (address) => {
-    return new Promise((resolve, reject) => {
-        const request = { type: 'latlng', address: address };
-        requester.send(request, (err, res) => {
-            console.log("Im in the request");
-            console.log(res);
-            if (err) {
-                reject(err);
-            } else {
-                resolve(res);
-            }
-        });
-    });
-}
+// let sendGeolocationRequest = (address) => {
+//     return new Promise((resolve, reject) => {
+//         const request = { type: 'latlng', address: address };
+//         requester.send(request, (err, res) => {
+//             console.log("Im in the request");
+//             console.log(res);
+//             if (err) {
+//                 reject(err);
+//             } else {
+//                 resolve(res);
+//             }
+//         });
+//     });
+// }
 
 router.post('/darksky', (req, res, next) => {
-    sendGeolocationRequest(req.body.address).then(
+    geolocation.sendGeolocationRequest(req.body.address).then(
         data => {
-            console.log(data.lat);
-            darksky.getForecast(data.lat, data.lng).then(
-                mydata => {
-                    res.status(200).json({data: mydata});
+            // console.log(data.lat);
+            return darksky.getForecast(data.lat, data.lng).then(
+                data => {
+                    res.status(200).json({data: data});
                 }, error => {
-                res.status(error.statusCode).json({
-                    error: error
-                });
+                    res.status(404).error(error);
+                // res.status(error.statusCode).json({
+                    // error: error
+                // });
             });
     }, error => {
         console.log("Im errored");
@@ -43,6 +43,7 @@ router.post('/darksky', (req, res, next) => {
             error: error
         });
     });
+});
 
 
     // console.log("I'm here");
@@ -73,7 +74,7 @@ router.post('/darksky', (req, res, next) => {
     //         });
     //     }
     // });
-});
+
 
 router.post('/hourly', (req, res, next) => {
     darksky.getHourlyForecast(req, (err, data) => {
